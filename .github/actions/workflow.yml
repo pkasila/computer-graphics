@@ -1,0 +1,47 @@
+name: Deploy Vite Apps to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies and build Lab 1
+        run: |
+          # Build all labs listed below and collect their dist outputs into a single 'site' folder
+          labs=("lab01")
+          rm -rf site || true
+          mkdir -p site
+          for lab in "${labs[@]}"; do
+            echo "Building ${lab}..."
+            pushd "$lab"
+            # set base for Vite so each lab is served under /owner/repo/<lab>/
+            VITE_APP_BASE="/computer-graphics/${lab}/" npm install
+            VITE_APP_BASE="/computer-graphics/${lab}/" npm run build
+            popd
+            mkdir -p "site/${lab}"
+            # copy built files into site/<lab>
+            cp -r "${lab}/dist/." "site/${lab}/"
+          done
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v3
+
+      - name: Upload aggregated site artifact for GitHub Pages
+        uses: actions/upload-pages-artifact@v1
+        with:
+          path: ./site
+
+      - name: Deploy aggregated site to GitHub Pages
+        uses: actions/deploy-pages@v1

@@ -1,0 +1,8 @@
+node_modules
+dist
+*.config.js
+*.cjs
+*.mjs
+package-lock.json
+pnpm-lock.yaml
+yarn.lock

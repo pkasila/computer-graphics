@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Лабораторная работа №1 (студ. 5): CMYK-RGB-HLS</title>
+  </head>
+  <body>
+	<div class="app-root">
+			<div class="selector-row-wrapper">
+				<input type="color" id="selector"></input>
+				<div id="color-preview"></div>
+				<button id="copy-hex" class="copy-hex-btn">Copy</button>
+				<button id="reset-btn" class="reset-btn">Reset</button>
+			</div>
+			<div id="rgb" class="block">
+				<div class="panel-title">RGB</div>
+			</div>
+			<div id="hls" class="block">
+				<div class="panel-title">HLS</div>
+			</div>
+			<div id="cmyk" class="block">
+				<div class="panel-title">CMYK</div>
+			</div>
+		</div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
