@@ -14,8 +14,9 @@ async function loadOpenCv(): Promise<void> {
   // Use Vite hint to avoid pre-bundling/resolution errors for the WASM package.
   // Vite will leave the import as-is and the dynamic import will be attempted at runtime.
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // Import as 'any' to avoid TypeScript type errors for this optional runtime-only package.
   // @ts-ignore
-  const mod = await import(/* @vite-ignore */ '@opencv.js/wasm');
+  const mod: any = await import(/* @vite-ignore */ '@opencv.js/wasm');
     // Some builds expose a default async factory/function
     if (typeof mod === 'function') {
       cv = await (mod as any)();
