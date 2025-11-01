@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lab02 — Image processing</title>
+  </head>
+  <body>
+    <div id="app">
+      <h1>Lab02 — Image processing (median, contrast, histogram equalization)</h1>
+
+      <div class="controls">
+        <label>Sample image:
+          <select id="sample-select"></select>
+        </label>
+        <label>Or upload image: <input id="file-input" type="file" accept="image/*"/></label>
+      </div>
+
+      <div class="main">
+        <div class="panel">
+          <h2>Original</h2>
+          <canvas id="canvas-src" width="400" height="300"></canvas>
+          <h4>Histogram (luminance)</h4>
+          <canvas id="hist-src" width="400" height="120"></canvas>
+        </div>
+        <div class="panel">
+          <h2>Processed</h2>
+          <canvas id="canvas-dst" width="400" height="300"></canvas>
+          <h4>Histogram (luminance)</h4>
+          <canvas id="hist-dst" width="400" height="120"></canvas>
+        </div>
+      </div>
+
+      <div class="ops">
+        <div class="op">
+          <h3>Non-linear / order-statistics</h3>
+          <label>Median radius: <input type="range" id="median-radius" min="1" max="5" value="1"/></label>
+          <button id="apply-median">Apply Median</button>
+        </div>
+
+        <div class="op">
+          <h3>Contrast</h3>
+          <label>Low (0..255): <input id="contrast-low" type="number" value="0" min="0" max="255"/></label>
+          <label>High (0..255): <input id="contrast-high" type="number" value="255" min="0" max="255"/></label>
+          <button id="apply-linear">Linear contrast</button>
+        </div>
+
+        <div class="op">
+          <h3>Histogram equalization</h3>
+          <label><input type="radio" name="eq-mode" value="rgb" checked/> Equalize RGB channels independently</label>
+          <label><input type="radio" name="eq-mode" value="hls"/> Equalize luminance in HLS</label>
+          <button id="apply-eq">Apply Equalization</button>
+        </div>
+
+        <div class="op">
+          <h3>Thresholding</h3>
+          <label><button id="apply-otsu">Global Otsu</button></label>
+          <label>Adaptive mean block size: <input type="number" id="adapt-block" value="15" min="3" max="101" step="2"/></label>
+          <label>Adaptive C: <input type="number" id="adapt-c" value="7" min="-50" max="50"/></label>
+          <label><button id="apply-adapt">Adaptive mean</button></label>
+        </div>
+
+        <div class="op">
+          <h3>Morphology</h3>
+          <label>Operation: 
+            <select id="morph-op"><option value="dilate">Dilate</option><option value="erode">Erode</option></select>
+          </label>
+          <label>Structuring radius: <input type="number" id="morph-radius" value="1" min="1" max="10"/></label>
+          <label><button id="apply-morph">Apply Morphology</button></label>
+        </div>
+
+        <div class="op">
+          <button id="reset">Reset Processed</button>
+          <button id="download">Download Processed</button>
+        </div>
+      </div>
+
+      <p class="notes">Generated test images: noisy, blurred, low-contrast gradient, striped texture. Use these to compare methods.</p>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+  </html>

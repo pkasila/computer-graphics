@@ -1,0 +1,28 @@
+body {
+  font-family: sans-serif;
+  background: #f5f6f8;
+  color: #111;
+  padding: 18px;
+}
+.controls {
+  display:flex;
+  gap:12px;
+  align-items:center;
+  margin-bottom:12px;
+}
+.main { display:flex; gap:16px; }
+.panel { background:white; border:1px solid #ddd; padding:8px; border-radius:6px }
+.ops { margin-top:12px; display:flex; flex-wrap:wrap; gap:12px }
+.op { background:#fff; border:1px solid #eee; padding:8px; border-radius:6px }
+.notes { margin-top:14px; color:#444 }
+canvas { background:#222; display:block }
+
+/* Histogram small canvas styling */
+#hist-src, #hist-dst { background: #fff; border:1px solid #eee; display:block; margin-top:8px }
+
+/* Controls layout improvements */
+.controls { flex-wrap:wrap }
+.op label { display:block; margin-bottom:6px }
+.op input[type="range"] { width:160px }
+.op input[type="number"] { width:84px }
+.ops { gap:16px }
