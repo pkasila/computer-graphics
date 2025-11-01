@@ -21,10 +21,10 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install dependencies and build Lab 1
+      - name: Install dependencies and build labs
         run: |
           # Build all labs listed below and collect their dist outputs into a single 'site' folder
-          labs=("lab01")
+          labs=("lab01" "lab02")
           rm -rf site || true
           mkdir -p site
           for lab in "${labs[@]}"; do
@@ -38,6 +38,10 @@ jobs:
             # copy built files into site/<lab>
             cp -r "${lab}/dist/." "site/${lab}/"
           done
+          # Copy a repository-level index (if present) into the site root so Pages shows a labs listing
+          if [ -f "./index.html" ]; then
+            cp ./index.html site/index.html
+          fi
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5

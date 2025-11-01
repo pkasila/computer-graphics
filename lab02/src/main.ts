@@ -1,5 +1,48 @@
 import './style.css';
 
+// Optional: OpenCV wasm loader. We'll try to dynamically import the package and, if
+// successful, use OpenCV-accelerated implementations. If not available, fall back
+// to the pure-TS/Canvas implementations already present below.
+let cv: any = null;
+let cvReady = false;
+async function loadOpenCv(): Promise<void> {
+  try {
+  // Dynamic import allows the app to run even if the dependency isn't installed.
+  // The package exports a factory that resolves when the runtime is ready.
+  // We attempt common export shapes to be robust across package versions.
+  // @ts-ignore - this module may not have TS types in the workspace
+  // Use Vite hint to avoid pre-bundling/resolution errors for the WASM package.
+  // Vite will leave the import as-is and the dynamic import will be attempted at runtime.
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  const mod = await import(/* @vite-ignore */ '@opencv.js/wasm');
+    // Some builds expose a default async factory/function
+    if (typeof mod === 'function') {
+      cv = await (mod as any)();
+    } else if (mod && typeof mod.default === 'function') {
+      cv = await (mod.default as any)();
+    } else if (mod && mod.cv) {
+      cv = mod.cv;
+      // some builds set a ready promise
+      if (mod.onRuntimeInitialized) await new Promise((res) => (mod.onRuntimeInitialized = res));
+    } else {
+      // fallback: use the module object as-is
+      cv = mod;
+    }
+    cvReady = !!cv;
+    // expose for debugging
+    (window as any).cv = cv;
+    console.info('OpenCV WASM loaded:', !!cv);
+  } catch (e) {
+    console.warn('OpenCV WASM not available; falling back to JS implementations.', e);
+    cv = null;
+    cvReady = false;
+  }
+}
+
+// Start loading OpenCV but don't block UI initialization.
+loadOpenCv();
+
 const samples = new Map<string, HTMLImageElement>();
 
 function createTestImages(): void {
@@ -101,6 +144,48 @@ function putImageData(canvas: HTMLCanvasElement, data: ImageData): void {
   canvas.getContext('2d')!.putImageData(data,0,0);
 }
 
+// --- OpenCV helpers ---
+function imageDataToMat(img: ImageData): any {
+  if (!cvReady || !cv) throw new Error('OpenCV not loaded');
+  try {
+    if ((cv as any).matFromImageData) {
+      return (cv as any).matFromImageData(img);
+    }
+    // fallback: construct from array
+    const arr = Array.from(img.data);
+    return cv.matFromArray(img.height, img.width, cv.CV_8UC4, arr);
+  } catch (e) {
+    throw e;
+  }
+}
+
+function matToImageData(mat: any): ImageData {
+  if (!cvReady || !cv) throw new Error('OpenCV not loaded');
+  const w = mat.cols, h = mat.rows;
+  const type = mat.type();
+  if (type === cv.CV_8UC1) {
+    const out = new ImageData(w, h);
+    for (let i = 0, j = 0; i < mat.data.length; i++, j += 4) {
+      out.data[j] = out.data[j+1] = out.data[j+2] = mat.data[i];
+      out.data[j+3] = 255;
+    }
+    return out;
+  }
+  if (type === cv.CV_8UC3) {
+    const out = new ImageData(w, h);
+    for (let i = 0, j = 0; i < mat.data.length; i += 3, j += 4) {
+      out.data[j] = mat.data[i];
+      out.data[j+1] = mat.data[i+1];
+      out.data[j+2] = mat.data[i+2];
+      out.data[j+3] = 255;
+    }
+    return out;
+  }
+  // CV_8UC4
+  return new ImageData(new Uint8ClampedArray(mat.data), w, h);
+}
+
+
 function computeLuminanceHistogram(data: ImageData): Uint32Array {
   const hist = new Uint32Array(256);
   for (let i = 0; i < data.data.length; i += 4) {
@@ -172,6 +257,21 @@ function otsuThreshold(data: ImageData): {threshold:number, result: ImageData} {
 
 // Adaptive mean thresholding (simple)
 function adaptiveMeanThreshold(data: ImageData, blockSize: number, C: number): ImageData {
+  if (cvReady && cv) {
+    try {
+      const srcMat = imageDataToMat(data);
+      const grayMat = new cv.Mat();
+      cv.cvtColor(srcMat, grayMat, cv.COLOR_RGBA2GRAY);
+      const dst = new cv.Mat();
+      let bs = blockSize; if (bs % 2 === 0) bs = Math.max(3, bs - 1);
+      cv.adaptiveThreshold(grayMat, dst, 255, cv.ADAPTIVE_THRESH_MEAN_C, cv.THRESH_BINARY, bs, C);
+      const out = matToImageData(dst);
+      srcMat.delete(); grayMat.delete(); dst.delete();
+      return out;
+    } catch (e) {
+      console.warn('OpenCV adaptive threshold failed, falling back', e);
+    }
+  }
   const w = data.width, h = data.height;
   const gray = getGrayscale(data);
   const out = new Uint8ClampedArray(gray.length);
@@ -200,6 +300,23 @@ function adaptiveMeanThreshold(data: ImageData, blockSize: number, C: number): I
 
 // Morphological operations on grayscale image
 function dilateGray(gray: Uint8ClampedArray, w: number, h: number, seRadius: number): Uint8ClampedArray {
+  if (cvReady && cv) {
+    try {
+      const src = grayscaleToImageData(gray, w, h);
+      const mat = imageDataToMat(src);
+      const grayMat = new cv.Mat();
+      cv.cvtColor(mat, grayMat, cv.COLOR_RGBA2GRAY);
+      const dst = new cv.Mat();
+      const ksize = 2*seRadius+1;
+      const kernel = cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(ksize, ksize));
+      cv.dilate(grayMat, dst, kernel);
+      const out = new Uint8ClampedArray(dst.data);
+      mat.delete(); grayMat.delete(); dst.delete(); kernel.delete();
+      return out;
+    } catch (e) {
+      console.warn('OpenCV dilate failed, falling back', e);
+    }
+  }
   const out = new Uint8ClampedArray(gray.length);
   for (let y = 0; y < h; y++) {
     for (let x = 0; x < w; x++) {
@@ -218,6 +335,23 @@ function dilateGray(gray: Uint8ClampedArray, w: number, h: number, seRadius: num
 }
 
 function erodeGray(gray: Uint8ClampedArray, w: number, h: number, seRadius: number): Uint8ClampedArray {
+  if (cvReady && cv) {
+    try {
+      const src = grayscaleToImageData(gray, w, h);
+      const mat = imageDataToMat(src);
+      const grayMat = new cv.Mat();
+      cv.cvtColor(mat, grayMat, cv.COLOR_RGBA2GRAY);
+      const dst = new cv.Mat();
+      const ksize = 2*seRadius+1;
+      const kernel = cv.getStructuringElement(cv.MORPH_RECT, new cv.Size(ksize, ksize));
+      cv.erode(grayMat, dst, kernel);
+      const out = new Uint8ClampedArray(dst.data);
+      mat.delete(); grayMat.delete(); dst.delete(); kernel.delete();
+      return out;
+    } catch (e) {
+      console.warn('OpenCV erode failed, falling back', e);
+    }
+  }
   const out = new Uint8ClampedArray(gray.length);
   for (let y = 0; y < h; y++) {
     for (let x = 0; x < w; x++) {
@@ -237,6 +371,26 @@ function erodeGray(gray: Uint8ClampedArray, w: number, h: number, seRadius: numb
 
 // median filter implementation (applied per-channel)
 function applyMedian(src: ImageData, radius: number): ImageData {
+  if (cvReady && cv) {
+    try {
+      const srcMat = imageDataToMat(src); // CV_8UC4
+      // convert RGBA->RGB
+      const rgb = new cv.Mat();
+      cv.cvtColor(srcMat, rgb, cv.COLOR_RGBA2RGB);
+      const ksize = Math.max(1, radius * 2 + 1);
+      const dstMat = new cv.Mat();
+      cv.medianBlur(rgb, dstMat, ksize);
+      // convert back to RGBA
+      const rgba = new cv.Mat();
+      cv.cvtColor(dstMat, rgba, cv.COLOR_RGB2RGBA);
+      const out = matToImageData(rgba);
+      srcMat.delete(); rgb.delete(); dstMat.delete(); rgba.delete();
+      return out;
+    } catch (e) {
+      console.warn('OpenCV median failed, falling back', e);
+    }
+  }
+  // fallback JS implementation
   const w = src.width, h = src.height;
   const dst = new ImageData(w,h);
   const r = radius;
@@ -283,6 +437,30 @@ function applyLinearContrast(src: ImageData, low: number, high: number): ImageDa
 
 // histogram equalization on each RGB channel independently
 function equalizeRGB(src: ImageData): ImageData {
+  // compute histograms
+  if (cvReady && cv) {
+    try {
+      const srcMat = imageDataToMat(src);
+      const rgb = new cv.Mat();
+      cv.cvtColor(srcMat, rgb, cv.COLOR_RGBA2RGB);
+      const channels = new cv.MatVector();
+      cv.split(rgb, channels);
+      for (let c = 0; c < 3; c++) {
+        const ch = channels.get(c);
+        cv.equalizeHist(ch, ch);
+        ch.delete();
+      }
+      const merged = new cv.Mat();
+      cv.merge(channels, merged);
+      const rgba = new cv.Mat();
+      cv.cvtColor(merged, rgba, cv.COLOR_RGB2RGBA);
+      const out = matToImageData(rgba);
+      srcMat.delete(); rgb.delete(); channels.delete(); merged.delete(); rgba.delete();
+      return out;
+    } catch (e) {
+      console.warn('OpenCV equalizeRGB failed, falling back', e);
+    }
+  }
   const w = src.width, h = src.height;
   const dst = new ImageData(w,h);
   // compute histograms

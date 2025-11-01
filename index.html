@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Компьютерная графика — лабораторные работы</title>
+  <style>
+    :root{--bg:#0f1720;--card:#e6eef8;--accent:#ef4444}
+    body{font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; background:linear-gradient(180deg,#071129, #0b1a2a); color:#e6eef8; margin:0; padding:48px;}
+    .container{max-width:880px;margin:0 auto}
+    h1{font-size:28px;margin:0 0 12px}
+    p.lead{color:#bcd3ee;margin-top:4px}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;margin-top:28px}
+  .card{background:rgba(255,255,255,0.06);border:2px solid rgba(255,255,255,0.08);padding:18px;border-radius:8px}
+  .wip-badge{display:inline-block;margin-left:10px;padding:3px 8px;font-size:12px;border-radius:12px;background:#ffcc00;color:#111;font-weight:700}
+    .card a{color:var(--accent);text-decoration:none;font-weight:600}
+    footer{margin-top:36px;color:#9fb6d9;font-size:13px}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Компьютерная графика — лабораторные работы</h1>
+    <p class="lead">Выберите лабораторную работу ниже. Каждая лабораторная размещена в отдельной директории для просмотра.</p>
+
+    <div class="grid">
+      <div class="card">
+        <h3>Лабораторная 01 — Цветовые модели и песочница</h3>
+        <p>Исследование конверсий RGB, CMYK и HLS, предпросмотр цвета и копирование HEX-кода.</p>
+        <p><a href="./lab01/">Открыть лабораторию 01</a></p>
+      </div>
+
+      <div class="card">
+        <h3>Лабораторная 02 — Обработка изображений <span class="wip-badge" title="В разработке">WIP</span></h3>
+        <p>Фильтры (медианный), выравнивание гистограммы, пороговая обработка и морфологические операции (опционально OpenCV WASM).</p>
+        <p><a href="./lab02/">Открыть лабораторию 02</a></p>
+      </div>
+    </div>
+
+    <footer>Развернуто из репозитория <code>computer-graphics</code>.</footer>
+  </div>
+</body>
+</html>
