@@ -110,7 +110,8 @@ class CMYK extends Color {
 		c: [0, 1, 0.01],
 		m: [0, 1, 0.01],
 		y: [0, 1, 0.01],
-		k: [0, 0.99, 0.01],
+		// allow K to reach 1.0 (pure black)
+		k: [0, 1, 0.01],
 	};
 
 	constructor(c: number, m: number, y: number, k: number) {
@@ -143,16 +144,16 @@ class CMYK extends Color {
 	setField(name: string, value: number): void {
 		switch (name) {
 			case 'c':
-				this.c = value;
+				this.c = Math.min(1, Math.max(0, value));
 				break;
 			case 'm':
-				this.m = value;
+				this.m = Math.min(1, Math.max(0, value));
 				break;
 			case 'y':
-				this.y = value;
+				this.y = Math.min(1, Math.max(0, value));
 				break;
 			case 'k':
-				this.k = value;
+				this.k = Math.min(1, Math.max(0, value));
 				break;
 			default:
 				break;
@@ -160,10 +161,13 @@ class CMYK extends Color {
 	}
 
 	toRgb(): RGB {
+		const r = Math.round(255 * (1 - this.c) * (1 - this.k));
+		const g = Math.round(255 * (1 - this.m) * (1 - this.k));
+		const b = Math.round(255 * (1 - this.y) * (1 - this.k));
 		return new RGB(
-			255 * (1 - this.c) * (1 - this.k),
-			255 * (1 - this.m) * (1 - this.k),
-			255 * (1 - this.y) * (1 - this.k),
+			Math.max(0, Math.min(255, r)),
+			Math.max(0, Math.min(255, g)),
+			Math.max(0, Math.min(255, b)),
 		);
 	}
 
@@ -171,17 +175,24 @@ class CMYK extends Color {
 		const r = rgb.r / 255;
 		const g = rgb.g / 255;
 		const b = rgb.b / 255;
-		this.k = Math.min(this.slider.k[1], 1 - Math.max(r, g, b));
+		// compute k as the complement of the brightest channel
+		this.k = 1 - Math.max(r, g, b);
+		// clamp to slider max (allows 1.0)
+		this.k = Math.min(this.slider.k[1], Math.max(this.slider.k[0], this.k));
 
-		if (1 - this.k === 0) {
+		// if k is (nearly) 1.0, set c/m/y to 0 to avoid division by zero
+		if (1 - this.k <= Number.EPSILON) {
 			this.c = 0;
 			this.m = 0;
 			this.y = 0;
-		} else {
-			this.c = (1 - r - this.k) / (1 - this.k);
-			this.m = (1 - g - this.k) / (1 - this.k);
-			this.y = (1 - b - this.k) / (1 - this.k);
+			return;
 		}
+
+		// otherwise compute normally and clamp into [0,1]
+		const denom = 1 - this.k;
+		this.c = Math.min(1, Math.max(0, (1 - r - this.k) / denom));
+		this.m = Math.min(1, Math.max(0, (1 - g - this.k) / denom));
+		this.y = Math.min(1, Math.max(0, (1 - b - this.k) / denom));
 	}
 }
 
@@ -191,9 +202,9 @@ class HLS extends Color {
 	public s: number;
 
 	public slider: Record<string, [number, number, number]> = {
-		h: [0, 0.99, 0.01],
-		l: [0, 0.99, 0.01],
-		s: [0, 0.99, 0.01],
+		h: [0, 1, 0.01],
+		l: [0, 1, 0.01],
+		s: [0, 1, 0.01],
 	};
 
 	constructor(h: number, l: number, s: number) {
@@ -290,13 +301,14 @@ class HLS extends Color {
 	setField(name: string, value: number): void {
 		switch (name) {
 			case 'h':
-				this.h = value;
+				// wrap hue into [0,1]
+				this.h = ((value % 1) + 1) % 1;
 				break;
 			case 'l':
-				this.l = value;
+				this.l = Math.min(1, Math.max(0, value));
 				break;
 			case 's':
-				this.s = value;
+				this.s = Math.min(1, Math.max(0, value));
 				break;
 			default:
 				break;

@@ -15,7 +15,7 @@ cmyk.fromRgb(rgb);
 // Local storage key for persisting the selected color
 const LOCAL_KEY = 'lab01.selectedColorHex';
 
-/** Load saved color from localStorage (hex) and apply to globalColor if present. */
+/** Load saved color from localStorage (hex) and apply to globalColor if 3present. */
 function loadSavedColor(): void {
 	try {
 		const saved = localStorage.getItem(LOCAL_KEY);
@@ -147,8 +147,13 @@ function update(ignoredColor: string | Color, ignoredInput: HTMLInputElement | n
 
 	for (const o of tiedFields) {
 		if (!ignoredInput || o.input.id !== ignoredInput.id) {
-			const val = o.object.getField(o.fieldName) ?? 0;
-			o.input.value = String(val);
+				const raw = o.object.getField(o.fieldName) ?? 0;
+				// show HLS and CMYK values with two decimal places
+				if ((o.object as any).colorName === 'hls' || (o.object as any).colorName === 'cmyk') {
+					o.input.value = Number(raw).toFixed(2);
+				} else {
+					o.input.value = String(raw);
+				}
 		}
 	}
 
@@ -188,7 +193,12 @@ function getContrastColor(r: number, g: number, b: number): string {
 function getInput(color: Color, fieldName: string): HTMLDivElement {
 	const input = document.createElement('input') as HTMLInputElement;
 	const slider = color.slider[fieldName] as [number, number, number];
-	input.value = String(color.getField(fieldName) ?? slider[0]);
+		const initialRaw = color.getField(fieldName) ?? slider[0];
+		if (color.colorName === 'hls' || color.colorName === 'cmyk') {
+			input.value = Number(initialRaw).toFixed(2);
+		} else {
+			input.value = String(initialRaw);
+		}
 	input.type = 'text';
 	input.id = fieldName + color.colorName;
 	input.addEventListener('input', makeFilter(slider, input));
@@ -222,7 +232,8 @@ function getInput(color: Color, fieldName: string): HTMLDivElement {
 		update(color.colorName, docSlider);
 	});
 
-		docSlider.value = String(color.getField(fieldName) ?? slider[0]);
+			// range inputs use numeric strings; keep value in raw numeric form
+			docSlider.value = String(color.getField(fieldName) ?? slider[0]);
 	const div = document.createElement('div');
 	div.append(label, input, docSlider);
 

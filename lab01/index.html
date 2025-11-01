@@ -7,22 +7,30 @@
     <title>Лабораторная работа №1 (студ. 5): CMYK-RGB-HLS</title>
   </head>
   <body>
-	<div class="app-root">
-			<div class="selector-row-wrapper">
-				<input type="color" id="selector"></input>
-				<div id="color-preview"></div>
-				<button id="copy-hex" class="copy-hex-btn">Copy</button>
-				<button id="reset-btn" class="reset-btn">Reset</button>
-			</div>
-			<div id="rgb" class="block">
-				<div class="panel-title">RGB</div>
-			</div>
-			<div id="hls" class="block">
-				<div class="panel-title">HLS</div>
-			</div>
-			<div id="cmyk" class="block">
-				<div class="panel-title">CMYK</div>
-			</div>
+		<div class="app-root neobrutal">
+			<header class="nb-header">
+				<h1 class="nb-title">Лабораторная работа №1 — CMYK · RGB · HLS</h1>
+				<div class="selector-row-wrapper">
+					<input type="color" id="selector"></input>
+					<div id="color-preview" aria-hidden="true"></div>
+					<button id="copy-hex" class="nb-btn nb-btn-accent">Copy</button>
+					<button id="reset-btn" class="nb-btn nb-btn-danger">Reset</button>
+				</div>
+			</header>
+
+			<main class="panels-grid">
+				<section id="rgb" class="block nb-panel">
+					<div class="panel-title">RGB</div>
+				</section>
+
+				<section id="hls" class="block nb-panel">
+					<div class="panel-title">HLS</div>
+				</section>
+
+				<section id="cmyk" class="block nb-panel">
+					<div class="panel-title">CMYK</div>
+				</section>
+			</main>
 		</div>
     <script type="module" src="/src/main.ts"></script>
   </body>

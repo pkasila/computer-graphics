@@ -1,175 +1,255 @@
 @import url('https://fonts.googleapis.com/css2?family=Google+Sans+Code:ital,wght@0,300..800;1,300..800&display=swap');
 
-html {
-  color: #cdd6f4;
-  background-color: #1e2d2e;
-  font-size: 16;
-  font-family: "Google Sans Code", monospace;
+:root {
+  --bg: #f2efe6;
+  --panel: #ffffff;
+  --ink: #0b0b0b;
+  --accent: #ffdd57;
+  --danger: #ff6b6b;
+  --border: #0b0b0b;
 }
 
-input {
-  color: #cdd6f4;
-  background-color: #1e2d2e;;
-  border: 1px solid #fcfeb4;
-  border-radius: 5px;
+/* Neobrutalist layout */
+* {
+  box-sizing: border-box
 }
 
-input[type="color"] {
-  border: none;
-  width: 100px;
-  height: 50px;
+html,
+body {
+  height: 100%
 }
 
-input[type="range"] {
-  appearance: none;
-  background-color: transparent;
-  width: 200px;
-  border: none;
+body {
+  margin: 0;
+  /* Primary: Google Sans Code, fall back to common monospace stacks for coding-style look */
+  font-family: "Google Sans Code", ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", monospace;
+  background: var(--bg);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
 }
 
-input[type="range"]::-webkit-slider-runnable-track {
-  position: relative;
-  height: 8px;
-  background-color: #444031;
-  border-radius: 8px;
-}
 
-input[type="range"]::-moz-range-track {
-  position: relative;
-  height: 8px;
-  background-color: #444031;
-  border-radius: 8px;
-}
-
-input[type="range"]::-webkit-slider-thumb {
-  box-sizing: border-box;
-  appearance: none;
-  position: relative;
-  background-color: #fcfeb4;
-  border-radius: 8px;
-  width: 16px;
-  height: 16px;
-  top: 50%;
-  translate: 0 -50%;
-}
-
-input[type="range"]::-moz-range-thumb {
-  box-sizing: border-box;
-  appearance: none;
-  position: relative;
-  background-color: #fcfeb4;
-  border-radius: 8px;
-  width: 16px;
-  height: 16px;
-}
-
-.block {
-  background-color: #1e2d2e;;
-  border-radius: 10px;
-  border: 1px solid #fcfeb4;
-  padding: 5px;
-}
-
-.controls-wrapper {
-  display: flex;
-  gap: 12px;
-  align-items: flex-start;
-  margin-top: 12px;
-}
-
-.panel {
-  min-width: 220px;
-  padding: 8px;
-}
-
-.selector-row {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  margin: 6px 0;
-}
-
-#color-preview {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
-  min-width: 64px;
-  min-height: 28px;
-}
-
-#copy-hex {
-  cursor: pointer;
-}
-
-/* App layout moved from inline styles */
-.app-root {
+.app-root.neobrutal {
+  padding: 48px;
   display: flex;
   flex-direction: column;
-  gap: 5px;
-  justify-content: center;
+  gap: 18px;
   align-items: center;
+  max-width: 1100px;
+  margin: 48px auto
+}
+
+.nb-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  flex-direction: column
+}
+
+.nb-title {
+  font-size: 20px;
+  margin: 0;
+  padding: 8px 12px;
+  border: 6px solid var(--border);
+  background: var(--panel);
+  box-shadow: 12px 12px 0 rgba(0, 0, 0, 0.12);
+  text-align: center
 }
 
 .selector-row-wrapper {
   display: flex;
+  gap: 12px;
   align-items: center;
-  gap: 8px;
+  justify-content: center
 }
 
-.color-preview, #color-preview {
-  width: 64px;
-  height: 32px;
-  border: 1px solid #000;
-  display: inline-flex;
+
+/* ensure all form controls use the same monospace/code-style typeset */
+input,
+button,
+select,
+textarea,
+label {
+  font-family: "Google Sans Code", ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", monospace;
+}
+
+input[type="color"] {
+  width: 84px;
+  height: 48px;
+  border: 6px solid var(--border);
+  padding: 0
+}
+
+#color-preview {
+  width: 110px;
+  min-width: 84px;
+  height: 48px;
+  border: 6px solid var(--border);
+  display: flex;
   align-items: center;
   justify-content: center;
   padding: 4px;
-  color: #cdd6f4;
-  font-size: 12px;
-  box-sizing: border-box;
-  margin-left: 4px;
+  font-weight: 700
 }
 
-.copy-hex-btn, #copy-hex {
-  margin-left: 8px;
-  padding: 6px;
-  border-radius: 6px;
-  border: 1px solid #b4befe;
-  background: transparent;
-  color: #cdd6f4;
+/* Panels grid */
+.panels-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  justify-content: center;
+  align-items: flex-start;
 }
 
-.reset-btn, #reset-btn {
-  margin-left: 6px;
-  padding: 6px;
-  border-radius: 6px;
-  border: 1px solid #ff6b6b;
-  background: transparent;
-  color: #ff6b6b;
+.nb-panel {
+  background: var(--panel);
+  padding: 16px;
+  border: 6px solid var(--border);
+  box-shadow: 12px 12px 0 rgba(0, 0, 0, 0.12);
+  min-height: 120px;
+  flex: 1 1 320px;
+  max-width: 360px
 }
 
 .panel-title {
+  font-weight: 700;
   text-align: center;
+  margin: 0 0 8px 0
 }
 
-/* small toast shown when hex is copied */
+/* Buttons — chunky, blocky */
+.nb-btn {
+  display: inline-block;
+  padding: 10px 14px;
+  border: 6px solid var(--border);
+  background: var(--panel);
+  color: var(--ink);
+  font-weight: 700;
+  cursor: pointer
+}
+
+.nb-btn-accent {
+  background: var(--accent)
+}
+
+.nb-btn-danger {
+  background: var(--danger);
+  color: #fff
+}
+
+/* Inputs and sliders — bold track and thumb */
+input,
+button,
+select {
+  font: inherit
+}
+
+/* Neobrutal range styles: chunky track with bold border and squared thumb */
+/* Range control: Safari-friendly reset and track/thumb sizes */
+/* Add comfortable margins so the thumb doesn't collide with neighboring elements */
+input[type="range"] {
+  display: block;
+  width: 100%;
+  background: transparent;
+  border: none;
+  padding: 0 24px;
+  margin: 22px 0;
+  -webkit-appearance: none;
+  appearance: none
+}
+
+/* track: thick black bar with inset border */
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 14px;
+  background: var(--ink);
+  border: 6px solid var(--border);
+  border-radius: 3px
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  appearance: none;
+  -webkit-appearance: none;
+  margin-top: -9px;
+  width: 34px;
+  height: 34px;
+  border: 6px solid var(--border);
+  background: var(--panel);
+  border-radius: 4px;
+  box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.12);
+  position: relative
+}
+
+input[type="range"]::-moz-range-track {
+  height: 14px;
+  background: var(--ink);
+  border-radius: 3px
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 34px;
+  height: 34px;
+  border: 6px solid var(--border);
+  background: var(--panel);
+  border-radius: 4px
+}
+
+/* extra Safari alignment guard */
+input[type="range"]::-webkit-slider-thumb {
+  transform: translateY(0)
+}
+
+/* small screens: reduce thumb/track slightly */
+@media (max-width:420px) {
+  input[type="range"] {
+    padding: 0 18px;
+    margin: 18px 0
+  }
+
+  input[type="range"]::-webkit-slider-runnable-track {
+    height: 12px
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    width: 30px;
+    height: 30px;
+    margin-top: -8px
+  }
+
+  input[type="range"]::-moz-range-thumb {
+    width: 30px;
+    height: 30px
+  }
+}
+
+/* Also ensure textual inputs and labels have spacing so sliders don't overlap them */
+.nb-panel label,
+.nb-panel .panel-row,
+.nb-panel input[type="number"],
+.nb-panel input[type="text"] {
+  display: block;
+  margin-bottom: 10px
+}
+
+/* small toast */
 #copy-toast {
   position: fixed;
   left: 50%;
   transform: translateX(-50%);
   bottom: 20px;
-  background: rgba(0,0,0,0.75);
-  color: #fff;
-  padding: 8px 12px;
-  border-radius: 6px;
-  font-size: 13px;
-  pointer-events: none;
+  background: var(--panel);
+  color: var(--ink);
+  padding: 10px 14px;
+  border: 6px solid var(--border);
   opacity: 0;
-  transition: opacity 160ms ease-in-out, transform 160ms ease-in-out;
+  transition: opacity 150ms
 }
 
 #copy-toast.visible {
-  opacity: 1;
-  transform: translateX(-50%) translateY(0);
+  opacity: 1
+}
+
+/* utility */
+.nb-small {
+  font-size: 13px
 }
