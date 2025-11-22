@@ -2,8 +2,6 @@
 
 [![Deploy Vite Apps to GitHub Pages](https://github.com/pkasila/computer-graphics/actions/workflows/workflow.yml/badge.svg)](https://github.com/pkasila/computer-graphics/actions/workflows/workflow.yml)
 
-## Описание репозитория
-
 В этом репозитории собраны лабораторные работы по курсу "Компьютерная графика". Каждая лабораторная реализована как отдельный проект с современным интерфейсом, чистым TypeScript/JavaScript и адаптивной версткой. Все работы запускаются локально через Vite и не требуют сторонних зависимостей для обработки изображений.
 
 ### Структура
