@@ -70,6 +70,11 @@ input, select {
     margin-bottom: 6px;
 }
 
+input[type="range"]#latency {
+    margin-top: 6px;
+    margin-bottom: 6px;
+}
+
 button {
     padding: 12px 18px;
     border: 6px solid var(--border);

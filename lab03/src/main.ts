@@ -4,6 +4,14 @@
 const canvas = document.getElementById('canvas') as HTMLCanvasElement;
 const ctx = canvas.getContext('2d', { alpha: false })!;
 const logDiv = document.getElementById('log') as HTMLElement;
+const latencyInput = document.getElementById('latency') as HTMLInputElement;
+const latencyValSpan = document.getElementById('latencyVal') as HTMLSpanElement;
+let latency = parseInt(latencyInput.value);
+
+latencyInput.addEventListener('input', (e) => {
+    latency = parseInt((e.target as HTMLInputElement).value);
+    latencyValSpan.textContent = String(latency);
+});
 
 let gridSize = 20;
 let centerX = canvas.width / 2;
@@ -63,7 +71,7 @@ function clearCanvas(redraw: boolean = true) {
 (window as any).clearCanvas = clearCanvas;
 (window as any).runAlgorithm = runAlgorithm;
 
-function stepAlgorithm(x1: number, y1: number, x2: number, y2: number): number {
+async function stepAlgorithm(x1: number, y1: number, x2: number, y2: number): Promise<number> {
     let pixels = 0;
     const dx = x2 - x1;
     const dy = y2 - y1;
@@ -78,11 +86,12 @@ function stepAlgorithm(x1: number, y1: number, x2: number, y2: number): number {
         x += Xinc;
         y += Yinc;
         pixels++;
+        if (latency > 0) await sleep(latency);
     }
     return pixels;
 }
 
-function ddaAlgorithm(x1: number, y1: number, x2: number, y2: number): number {
+async function ddaAlgorithm(x1: number, y1: number, x2: number, y2: number): Promise<number> {
     let pixels = 0;
     let dx = x2 - x1;
     let dy = y2 - y1;
@@ -96,11 +105,12 @@ function ddaAlgorithm(x1: number, y1: number, x2: number, y2: number): number {
         x += xInc;
         y += yInc;
         pixels++;
+        if (latency > 0) await sleep(latency);
     }
     return pixels;
 }
 
-function bresenhamLine(x1: number, y1: number, x2: number, y2: number): number {
+async function bresenhamLine(x1: number, y1: number, x2: number, y2: number): Promise<number> {
     let pixels = 0;
     let dx = Math.abs(x2 - x1);
     let dy = Math.abs(y2 - y1);
@@ -110,6 +120,7 @@ function bresenhamLine(x1: number, y1: number, x2: number, y2: number): number {
     while(true) {
         plot(x1, y1);
         pixels++;
+        if (latency > 0) await sleep(latency);
         if ((x1 === x2) && (y1 === y2)) break;
         let e2 = 2 * err;
         if (e2 > -dy) { err -= dy; x1 += sx; }
@@ -118,13 +129,14 @@ function bresenhamLine(x1: number, y1: number, x2: number, y2: number): number {
     return pixels;
 }
 
-function bresenhamCircle(xc: number, yc: number, r: number): number {
+async function bresenhamCircle(xc: number, yc: number, r: number): Promise<number> {
     let pixels = 0;
     let x = 0;
     let y = r;
     let d = 3 - 2 * r;
     drawCirclePixels(xc, yc, x, y);
     pixels += 8;
+    if (latency > 0) await sleep(latency);
     while (y >= x) {
         x++;
         if (d > 0) {
@@ -135,6 +147,7 @@ function bresenhamCircle(xc: number, yc: number, r: number): number {
         }
         drawCirclePixels(xc, yc, x, y);
         pixels += 8;
+        if (latency > 0) await sleep(latency);
     }
     return pixels;
 }
@@ -150,11 +163,12 @@ function drawCirclePixels(xc: number, yc: number, x: number, y: number) {
     plot(xc - y, yc - x);
 }
 
-function wuAlgorithm(x1: number, y1: number, x2: number, y2: number): number {
+async function wuAlgorithm(x1: number, y1: number, x2: number, y2: number): Promise<number> {
     let pixels = 0;
-    function plotWu(x: number, y: number, c: number) {
+    async function plotWu(x: number, y: number, c: number) {
         plot(x, y, c, "rgba(0,0,0,");
         pixels++;
+        if (latency > 0) await sleep(latency);
     }
     function ipart(x: number) { return Math.floor(x); }
     function round(x: number) { return Math.round(x); }
@@ -181,11 +195,11 @@ function wuAlgorithm(x1: number, y1: number, x2: number, y2: number): number {
     let xpxl1 = xend;
     let ypxl1 = ipart(yend);
     if (steep) {
-        plotWu(ypxl1, xpxl1, rfpart(yend) * xgap);
-        plotWu(ypxl1 + 1, xpxl1, fpart(yend) * xgap);
+        await plotWu(ypxl1, xpxl1, rfpart(yend) * xgap);
+        await plotWu(ypxl1 + 1, xpxl1, fpart(yend) * xgap);
     } else {
-        plotWu(xpxl1, ypxl1, rfpart(yend) * xgap);
-        plotWu(xpxl1, ypxl1 + 1, fpart(yend) * xgap);
+        await plotWu(xpxl1, ypxl1, rfpart(yend) * xgap);
+        await plotWu(xpxl1, ypxl1 + 1, fpart(yend) * xgap);
     }
     let intery = yend + gradient;
     xend = round(x2);
@@ -194,29 +208,29 @@ function wuAlgorithm(x1: number, y1: number, x2: number, y2: number): number {
     let xpxl2 = xend;
     let ypxl2 = ipart(yend);
     if (steep) {
-        plotWu(ypxl2, xpxl2, rfpart(yend) * xgap);
-        plotWu(ypxl2 + 1, xpxl2, fpart(yend) * xgap);
+        await plotWu(ypxl2, xpxl2, rfpart(yend) * xgap);
+        await plotWu(ypxl2 + 1, xpxl2, fpart(yend) * xgap);
     } else {
-        plotWu(xpxl2, ypxl2, rfpart(yend) * xgap);
-        plotWu(xpxl2, ypxl2 + 1, fpart(yend) * xgap);
+        await plotWu(xpxl2, ypxl2, rfpart(yend) * xgap);
+        await plotWu(xpxl2, ypxl2 + 1, fpart(yend) * xgap);
     }
     if (steep) {
         for (let x = xpxl1 + 1; x < xpxl2; x++) {
-            plotWu(ipart(intery), x, rfpart(intery));
-            plotWu(ipart(intery) + 1, x, fpart(intery));
+            await plotWu(ipart(intery), x, rfpart(intery));
+            await plotWu(ipart(intery) + 1, x, fpart(intery));
             intery += gradient;
         }
     } else {
         for (let x = xpxl1 + 1; x < xpxl2; x++) {
-            plotWu(x, ipart(intery), rfpart(intery));
-            plotWu(x, ipart(intery) + 1, fpart(intery));
+            await plotWu(x, ipart(intery), rfpart(intery));
+            await plotWu(x, ipart(intery) + 1, fpart(intery));
             intery += gradient;
         }
     }
     return pixels;
 }
 
-function runAlgorithm() {
+async function runAlgorithm() {
     const algo = (document.getElementById('algoSelect') as HTMLSelectElement).value;
     const x1 = parseInt((document.getElementById('x1') as HTMLInputElement).value);
     const y1 = parseInt((document.getElementById('y1') as HTMLInputElement).value);
@@ -225,18 +239,22 @@ function runAlgorithm() {
     let count = 0;
     const t0 = performance.now();
     if (algo === 'bresenhamCircle') {
-        count = bresenhamCircle(x1, y1, x2);
+        count = await bresenhamCircle(x1, y1, x2);
     } else if (algo === 'step') {
-        count = stepAlgorithm(x1, y1, x2, y2);
+        count = await stepAlgorithm(x1, y1, x2, y2);
     } else if (algo === 'dda') {
-        count = ddaAlgorithm(x1, y1, x2, y2);
+        count = await ddaAlgorithm(x1, y1, x2, y2);
     } else if (algo === 'bresenhamLine') {
-        count = bresenhamLine(x1, y1, x2, y2);
+        count = await bresenhamLine(x1, y1, x2, y2);
     } else if (algo === 'wu') {
-        count = wuAlgorithm(x1, y1, x2, y2);
+        count = await wuAlgorithm(x1, y1, x2, y2);
     }
     const t1 = performance.now();
-    logDiv.innerHTML = `Время выполнения: ${(t1 - t0).toFixed(3)} мс<br>Закрашено пикселей: ~${count}`;
+    logDiv.innerHTML = `Время выполнения: ${(t1 - t0)} мс<br>Закрашено пикселей: ${count}`;
+}
+// Helper for latency
+function sleep(ms: number) {
+    return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 (document.getElementById('algoSelect') as HTMLSelectElement).addEventListener('change', function(e) {

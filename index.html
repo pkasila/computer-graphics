@@ -26,7 +26,7 @@
       margin: 0 auto;
       display: flex;
       flex-direction: column;
-      gap: 24px;
+      gap: 18px;
       align-items: center;
     }
     h1 {
@@ -45,25 +45,31 @@
       text-align: center;
     }
     .grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 24px;
-      justify-content: center;
-      align-items: flex-start;
-      margin-top: 28px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 32px;
+      margin-bottom: 20px;
+      align-items: stretch;
+    }
+    @media (max-width: 900px) {
+      .grid {
+        grid-template-columns: 1fr;
+        gap: 24px;
+      }
     }
     .card {
       background: var(--panel);
       border: 6px solid var(--border);
       box-shadow: 12px 12px 0 rgba(0,0,0,0.12);
-      padding: 18px;
+      padding: 12px 14px;
       border-radius: 0;
       min-width: 260px;
       max-width: 360px;
-      flex: 1 1 320px;
       display: flex;
       flex-direction: column;
-      gap: 0;
+      gap: 6px;
+      justify-content: flex-start;
+      height: 100%;
     }
     .card h3 {
       font-size: 18px;
@@ -132,19 +138,17 @@
         <p>Исследование конверсий RGB, CMYK и HLS, предпросмотр цвета и копирование HEX-кода.</p>
         <p><a href="./lab01/">Открыть лабораторию 01</a></p>
       </div>
-
       <div class="card">
         <h3>Лабораторная 02 — Обработка изображений</h3>
         <p>Фильтры (медианный), выравнивание гистограммы, линейное констрастирование.</p>
         <p><a href="./lab02/">Открыть лабораторию 02</a></p>
       </div>
-    </div>
-
       <div class="card">
         <h3>Лабораторная 03 — Базовые растровые алгоритмы</h3>
         <p>Использование базовых алгоритмов растеризации отрезков и кривых.</p>
         <p><a href="./lab03/">Открыть лабораторию 03</a></p>
       </div>
+    </div>
     </div>
 
     <footer>Развернуто из репозитория <code>computer-graphics</code>.</footer>

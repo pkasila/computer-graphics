@@ -38,6 +38,10 @@
         <label>Масштаб (пикселей в клетке): <span id="zoomVal">20</span></label>
         <input type="range" id="zoom" min="5" max="50" value="20">
     </div>
+    <div class="input-group">
+        <label>Задержка шага алгоритма (мс): <span id="latencyVal">0</span></label>
+        <input type="range" id="latency" min="0" max="500" value="0" step="10">
+    </div>
     <button onclick="runAlgorithm()">Построить</button>
     <button class="secondary" onclick="clearCanvas(true)">Очистить</button>
     <div class="stats" id="log">
