@@ -59,6 +59,24 @@ function plot(x: number, y: number, opacity: number = 1, color: string = "rgba(2
     ctx.fillRect(screenX + 1, screenY - gridSize + 1, gridSize - 1, gridSize - 1);
 }
 
+// Modal logic for algorithm steps
+let algorithmSteps: string[] = [];
+const stepsModal = document.getElementById('stepsModal') as HTMLElement;
+const stepsLog = document.getElementById('stepsLog') as HTMLElement;
+const showStepsBtn = document.getElementById('showStepsBtn') as HTMLElement;
+const closeStepsModal = document.getElementById('closeStepsModal') as HTMLElement;
+
+showStepsBtn.addEventListener('click', () => {
+    stepsLog.textContent = algorithmSteps.length ? algorithmSteps.join('\n') : 'Нет шагов для отображения.';
+    stepsModal.style.display = 'flex';
+});
+closeStepsModal.addEventListener('click', () => {
+    stepsModal.style.display = 'none';
+});
+window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') stepsModal.style.display = 'none';
+});
+
 
 function clearCanvas(redraw: boolean = true) {
     if (redraw) drawGrid();
@@ -69,17 +87,26 @@ function clearCanvas(redraw: boolean = true) {
 (window as any).runAlgorithm = runAlgorithm;
 
 async function stepAlgorithm(x1: number, y1: number, x2: number, y2: number): Promise<number> {
+    algorithmSteps = [];
     let pixels = 0;
     const dx = x2 - x1;
     const dy = y2 - y1;
-    if (dx === 0 && dy === 0) { plot(x1, y1); return 1; }
+    algorithmSteps.push(`dx = ${dx}, dy = ${dy}`);
+    if (dx === 0 && dy === 0) {
+        plot(x1, y1);
+        algorithmSteps.push(`Точка (${x1}, ${y1})`);
+        return 1;
+    }
     const steps = Math.abs(dx) > Math.abs(dy) ? Math.abs(dx) : Math.abs(dy);
+    algorithmSteps.push(`steps = ${steps}`);
     const Xinc = dx / steps;
     const Yinc = dy / steps;
+    algorithmSteps.push(`Xinc = ${Xinc}, Yinc = ${Yinc}`);
     let x = x1;
     let y = y1;
     for (let i = 0; i <= steps; i++) {
         plot(Math.round(x), Math.round(y));
+        algorithmSteps.push(`i=${i}: x=${x.toFixed(3)}, y=${y.toFixed(3)} → plot(${Math.round(x)}, ${Math.round(y)})`);
         x += Xinc;
         y += Yinc;
         pixels++;
@@ -89,16 +116,21 @@ async function stepAlgorithm(x1: number, y1: number, x2: number, y2: number): Pr
 }
 
 async function ddaAlgorithm(x1: number, y1: number, x2: number, y2: number): Promise<number> {
+    algorithmSteps = [];
     let pixels = 0;
     let dx = x2 - x1;
     let dy = y2 - y1;
+    algorithmSteps.push(`dx = ${dx}, dy = ${dy}`);
     let steps = Math.max(Math.abs(dx), Math.abs(dy));
+    algorithmSteps.push(`steps = ${steps}`);
     let xInc = dx / steps;
     let yInc = dy / steps;
+    algorithmSteps.push(`xInc = ${xInc}, yInc = ${yInc}`);
     let x = x1;
     let y = y1;
     for (let i = 0; i <= steps; i++) {
         plot(Math.round(x), Math.round(y));
+        algorithmSteps.push(`i=${i}: x=${x.toFixed(3)}, y=${y.toFixed(3)} → plot(${Math.round(x)}, ${Math.round(y)})`);
         x += xInc;
         y += yInc;
         pixels++;
@@ -108,30 +140,37 @@ async function ddaAlgorithm(x1: number, y1: number, x2: number, y2: number): Pro
 }
 
 async function bresenhamLine(x1: number, y1: number, x2: number, y2: number): Promise<number> {
+    algorithmSteps = [];
     let pixels = 0;
     let dx = Math.abs(x2 - x1);
     let dy = Math.abs(y2 - y1);
     let sx = (x1 < x2) ? 1 : -1;
     let sy = (y1 < y2) ? 1 : -1;
     let err = dx - dy;
+    algorithmSteps.push(`dx = ${dx}, dy = ${dy}, sx = ${sx}, sy = ${sy}, err = ${err}`);
     while(true) {
         plot(x1, y1);
+        algorithmSteps.push(`plot(${x1}, ${y1}), err=${err}`);
         pixels++;
         if (latency > 0) await sleep(latency);
         if ((x1 === x2) && (y1 === y2)) break;
         let e2 = 2 * err;
-        if (e2 > -dy) { err -= dy; x1 += sx; }
-        if (e2 < dx) { err += dx; y1 += sy; }
+        algorithmSteps.push(`e2 = ${e2}`);
+        if (e2 > -dy) { err -= dy; x1 += sx; algorithmSteps.push(`err -= dy → ${err}, x1 += sx → ${x1}`); }
+        if (e2 < dx) { err += dx; y1 += sy; algorithmSteps.push(`err += dx → ${err}, y1 += sy → ${y1}`); }
     }
     return pixels;
 }
 
 async function bresenhamCircle(xc: number, yc: number, r: number): Promise<number> {
+    algorithmSteps = [];
     let pixels = 0;
     let x = 0;
     let y = r;
     let d = 3 - 2 * r;
+    algorithmSteps.push(`r = ${r}, d = ${d}`);
     drawCirclePixels(xc, yc, x, y);
+    algorithmSteps.push(`x=${x}, y=${y} → plot 8 points`);
     pixels += 8;
     if (latency > 0) await sleep(latency);
     while (y >= x) {
@@ -139,10 +178,13 @@ async function bresenhamCircle(xc: number, yc: number, r: number): Promise<numbe
         if (d > 0) {
             y--;
             d = d + 4 * (x - y) + 10;
+            algorithmSteps.push(`d > 0: y-- → ${y}, d = ${d}`);
         } else {
             d = d + 4 * x + 6;
+            algorithmSteps.push(`d <= 0: d = ${d}`);
         }
         drawCirclePixels(xc, yc, x, y);
+        algorithmSteps.push(`x=${x}, y=${y} → plot 8 points`);
         pixels += 8;
         if (latency > 0) await sleep(latency);
     }
@@ -161,9 +203,11 @@ function drawCirclePixels(xc: number, yc: number, x: number, y: number) {
 }
 
 async function wuAlgorithm(x1: number, y1: number, x2: number, y2: number): Promise<number> {
+    algorithmSteps = [];
     let pixels = 0;
     async function plotWu(x: number, y: number, c: number) {
         plot(x, y, c, "rgba(0,0,0,");
+        algorithmSteps.push(`plotWu(${x}, ${y}, opacity=${c.toFixed(3)})`);
         pixels++;
         if (latency > 0) await sleep(latency);
     }
@@ -174,23 +218,28 @@ async function wuAlgorithm(x1: number, y1: number, x2: number, y2: number): Prom
     let dx = x2 - x1;
     let dy = y2 - y1;
     let steep = Math.abs(dy) > Math.abs(dx);
+    algorithmSteps.push(`dx = ${dx}, dy = ${dy}, steep = ${steep}`);
     if (steep) {
         [x1, y1] = [y1, x1];
         [x2, y2] = [y2, x2];
+        algorithmSteps.push(`swap axes for steep`);
     }
     if (x1 > x2) {
         [x1, x2] = [x2, x1];
         [y1, y2] = [y2, y1];
+        algorithmSteps.push(`swap endpoints for left-to-right`);
     }
     dx = x2 - x1;
     dy = y2 - y1;
     let gradient = dy / dx;
     if (dx === 0) gradient = 1.0;
+    algorithmSteps.push(`gradient = ${gradient}`);
     let xend = round(x1);
     let yend = y1 + gradient * (xend - x1);
     let xgap = rfpart(x1 + 0.5);
     let xpxl1 = xend;
     let ypxl1 = ipart(yend);
+    algorithmSteps.push(`xend = ${xend}, yend = ${yend}, xgap = ${xgap}`);
     if (steep) {
         await plotWu(ypxl1, xpxl1, rfpart(yend) * xgap);
         await plotWu(ypxl1 + 1, xpxl1, fpart(yend) * xgap);
@@ -204,6 +253,7 @@ async function wuAlgorithm(x1: number, y1: number, x2: number, y2: number): Prom
     xgap = fpart(x2 + 0.5);
     let xpxl2 = xend;
     let ypxl2 = ipart(yend);
+    algorithmSteps.push(`xend = ${xend}, yend = ${yend}, xgap = ${xgap}`);
     if (steep) {
         await plotWu(ypxl2, xpxl2, rfpart(yend) * xgap);
         await plotWu(ypxl2 + 1, xpxl2, fpart(yend) * xgap);
@@ -215,12 +265,14 @@ async function wuAlgorithm(x1: number, y1: number, x2: number, y2: number): Prom
         for (let x = xpxl1 + 1; x < xpxl2; x++) {
             await plotWu(ipart(intery), x, rfpart(intery));
             await plotWu(ipart(intery) + 1, x, fpart(intery));
+            algorithmSteps.push(`x=${x}, intery=${intery}`);
             intery += gradient;
         }
     } else {
         for (let x = xpxl1 + 1; x < xpxl2; x++) {
             await plotWu(x, ipart(intery), rfpart(intery));
             await plotWu(x, ipart(intery) + 1, fpart(intery));
+            algorithmSteps.push(`x=${x}, intery=${intery}`);
             intery += gradient;
         }
     }
