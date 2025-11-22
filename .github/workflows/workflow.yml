@@ -24,7 +24,7 @@ jobs:
       - name: Install dependencies and build labs
         run: |
           # Build all labs listed below and collect their dist outputs into a single 'site' folder
-          labs=("lab01" "lab02")
+          labs=("lab01" "lab02" "lab03")
           rm -rf site || true
           mkdir -p site
           for lab in "${labs[@]}"; do

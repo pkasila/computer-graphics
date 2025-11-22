@@ -1,0 +1,59 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Лабораторная работа 3: Растровые алгоритмы</title>
+    <link rel="stylesheet" href="src/style.css">
+</head>
+<body>
+
+<div class="controls">
+    <h2>Настройки</h2>
+    <div class="input-group">
+        <label>Алгоритм:</label>
+        <select id="algoSelect">
+            <option value="step">Пошаговый (Step)</option>
+            <option value="dda">ЦДА (DDA)</option>
+            <option value="bresenhamLine">Брезенхем (Линия)</option>
+            <option value="bresenhamCircle">Брезенхем (Окружность)</option>
+            <option value="wu">Сглаживание (Wu) [Бонус]</option>
+        </select>
+    </div>
+    <div class="input-group">
+        <label>Координаты начала (X1, Y1) / Центр:</label>
+        <div style="display: flex; gap: 2px;">
+            <input type="number" id="x1" value="0" placeholder="X1" style="width: 60px;">
+            <input type="number" id="y1" value="0" placeholder="Y1" style="width: 60px;">
+        </div>
+    </div>
+    <div class="input-group" id="endCoords">
+        <label>Координаты конца (X2, Y2) / Радиус (R):</label>
+        <div style="display: flex; gap: 2px;">
+            <input type="number" id="x2" value="10" placeholder="X2/R" style="width: 60px;">
+            <input type="number" id="y2" value="5" placeholder="Y2" style="width: 60px;">
+        </div>
+    </div>
+    <div class="input-group">
+        <label>Масштаб (пикселей в клетке): <span id="zoomVal">20</span></label>
+        <input type="range" id="zoom" min="5" max="50" value="20">
+    </div>
+    <button onclick="runAlgorithm()">Построить</button>
+    <button class="secondary" onclick="clearCanvas(true)">Очистить</button>
+    <div class="stats" id="log">
+        Время выполнения: -<br>
+        Закрашено пикселей: -
+    </div>
+    <div style="font-size: 0.8rem; color: #666; margin-top: auto;">
+        ЛКМ по сетке ставит точку 1.<br>
+        ПКМ по сетке ставит точку 2.
+    </div>
+</div>
+
+<div class="canvas-container">
+    <canvas id="canvas" width="800" height="600"></canvas>
+    <div class="coord-info" id="mouseCoords">X: 0, Y: 0</div>
+</div>
+
+<script type="module" src="/src/main.ts"></script>
+</body>
