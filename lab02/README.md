@@ -75,7 +75,7 @@
 | Исходное изображение | RGB-гистограмма | HLS-гистограмма |
 |:--------------------:|:---------------:|:---------------:|
 | ![](assets/green-hills.jpg) | ![](assets/green-hills-rgb.png) | ![](assets/green-hills-hls.png) |
-| ![](assets/histogram.jpg) | ![](assets/histogram_rgb.png) | ![](assets/histogram_hls.png) |
+| ![](assets/histogram.png) | ![](assets/histogram_rgb.png) | ![](assets/histogram_hls.png) |
 
 **Описание:**
 1. Исходное изображение.
