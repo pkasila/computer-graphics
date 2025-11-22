@@ -60,6 +60,17 @@ function plot(x: number, y: number, opacity: number = 1, color: string = "rgba(2
 }
 
 // Modal logic for algorithm steps
+// Export Canvas logic
+const exportCanvasBtn = document.getElementById('exportCanvasBtn') as HTMLElement;
+exportCanvasBtn.addEventListener('click', () => {
+    const dataURL = canvas.toDataURL('image/png');
+    const link = document.createElement('a');
+    link.href = dataURL;
+    link.download = 'canvas-export.png';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+});
 let algorithmSteps: string[] = [];
 const stepsModal = document.getElementById('stepsModal') as HTMLElement;
 const stepsLog = document.getElementById('stepsLog') as HTMLElement;
