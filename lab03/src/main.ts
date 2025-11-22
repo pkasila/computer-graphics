@@ -109,26 +109,35 @@ async function stepAlgorithmCore(x1: number, y1: number, x2: number, y2: number,
     let pixels = 0;
     const dx = x2 - x1;
     const dy = y2 - y1;
-    algorithmSteps.push(`dx = ${dx}, dy = ${dy}`);
-    if (dx === 0 && dy === 0) {
-        plot(x1, y1);
-        algorithmSteps.push(`Точка (${x1}, ${y1})`);
-        return 1;
-    }
-    const steps = Math.abs(dx) > Math.abs(dy) ? Math.abs(dx) : Math.abs(dy);
-    algorithmSteps.push(`steps = ${steps}`);
-    const Xinc = dx / steps;
-    const Yinc = dy / steps;
-    algorithmSteps.push(`Xinc = ${Xinc}, Yinc = ${Yinc}`);
-    let x = x1;
-    let y = y1;
-    for (let i = 0; i <= steps; i++) {
-        plot(Math.round(x), Math.round(y));
-        algorithmSteps.push(`i=${i}: x=${x.toFixed(3)}, y=${y.toFixed(3)} → plot(${Math.round(x)}, ${Math.round(y)})`);
-        x += Xinc;
-        y += Yinc;
-        pixels++;
-        if (!skipLatency && latency > 0) await sleep(latency);
+
+    if (Math.abs(dx) >= Math.abs(dy)) {
+        const k = dy / dx;
+        const b = y1 - k * x1;
+        const step = (dx > 0) ? 1 : -1;
+        
+        let x = x1;
+        while ((step > 0) ? x <= x2 : x >= x2) {
+            const y = k * x + b;
+            plot(x, Math.round(y));
+            algorithmSteps.push(`x=${x}, y=${y.toFixed(2)} -> plot(${x}, ${Math.round(y)})`);
+            x += step;
+            pixels++;
+            if (!skipLatency && latency > 0) await sleep(latency);
+        }
+    } else {
+        const k = dx / dy;
+        const b = x1 - k * y1;
+        const step = (dy > 0) ? 1 : -1;
+        
+        let y = y1;
+        while ((step > 0) ? y <= y2 : y >= y2) {
+            const x = k * y + b;
+            plot(Math.round(x), y);
+            algorithmSteps.push(`y=${y}, x=${x.toFixed(2)} -> plot(${Math.round(x)}, ${y})`);
+            y += step;
+            pixels++;
+            if (!skipLatency && latency > 0) await sleep(latency);
+        }
     }
     return pixels;
 }
