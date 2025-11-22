@@ -250,7 +250,7 @@ async function runAlgorithm() {
         count = await wuAlgorithm(x1, y1, x2, y2);
     }
     const t1 = performance.now();
-    logDiv.innerHTML = `Время выполнения: ${(t1 - t0)} мс<br>Закрашено пикселей: ${count}`;
+    logDiv.innerHTML = `Время выполнения: ${(t1 - t0).toFixed(3)} мс<br>Закрашено пикселей: ${count}`;
 }
 // Helper for latency
 function sleep(ms: number) {
