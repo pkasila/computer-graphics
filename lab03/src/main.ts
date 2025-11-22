@@ -336,6 +336,84 @@ async function wuAlgorithmCore(x1: number, y1: number, x2: number, y2: number, s
     return pixels;
 }
 
+
+async function castlePittewayAlgorithm(x1: number, y1: number, x2: number, y2: number): Promise<number> {
+    algorithmSteps = [];
+    let dx = x2 - x1;
+    let dy = y2 - y1;
+    let sx = (dx >= 0) ? 1 : -1;
+    let sy = (dy >= 0) ? 1 : -1;
+    let a = Math.abs(dx);
+    let b = Math.abs(dy);
+    let steep = b > a;
+    if (steep) {
+        [a, b] = [b, a];
+        algorithmSteps.push('swap a and b for steep');
+    }
+    let m1 = 's';
+    let m2 = 'd';
+    let x_alg = a - b;
+    let y_alg = b;
+    let pattern = '';
+    if (y_alg === 0) {
+        pattern = 's';
+        algorithmSteps.push('y_alg == 0: pattern = s');
+    } else if (x_alg === 0) {
+        pattern = 'd';
+        algorithmSteps.push('x_alg == 0: pattern = d');
+    } else {
+        while (x_alg !== y_alg) {
+            if (x_alg > y_alg) {
+                x_alg = x_alg - y_alg;
+                m2 = m1 + m2;
+                algorithmSteps.push(`x_alg > y_alg: x_alg = ${x_alg}, m2 = ${m2}`);
+            } else {
+                y_alg = y_alg - x_alg;
+                m1 = m2 + m1;
+                algorithmSteps.push(`y_alg > x_alg: y_alg = ${y_alg}, m1 = ${m1}`);
+            }
+        }
+        pattern = m2 + m1;
+        algorithmSteps.push(`pattern = ${pattern}`);
+    }
+    let cur_x = x1;
+    let cur_y = y1;
+    plot(cur_x, cur_y);
+    algorithmSteps.push(`start: plot(${cur_x}, ${cur_y})`);
+    let repeats = (x_alg === 0) ? a : x_alg;
+    if (y_alg === 0) repeats = a;
+    let full_path = '';
+    for (let i = 0; i < repeats; ++i) full_path += pattern;
+    algorithmSteps.push(`full_path = ${full_path}`);
+    let pixels = 1;
+    for (const move of full_path) {
+        if (steep) {
+            if (move === 's') {
+                cur_y += sy;
+                algorithmSteps.push(`steep: s → cur_y = ${cur_y}`);
+            } else {
+                cur_y += sy;
+                cur_x += sx;
+                algorithmSteps.push(`steep: d → cur_y = ${cur_y}, cur_x = ${cur_x}`);
+            }
+        } else {
+            if (move === 's') {
+                cur_x += sx;
+                algorithmSteps.push(`not steep: s → cur_x = ${cur_x}`);
+            } else {
+                cur_x += sx;
+                cur_y += sy;
+                algorithmSteps.push(`not steep: d → cur_x = ${cur_x}, cur_y = ${cur_y}`);
+            }
+        }
+        plot(cur_x, cur_y);
+        algorithmSteps.push(`plot(${cur_x}, ${cur_y})`);
+        pixels++;
+        if (latency > 0) await sleep(latency);
+    }
+    return pixels;
+}
+
 async function runAlgorithm() {
     const algo = (document.getElementById('algoSelect') as HTMLSelectElement).value;
     const x1 = parseInt((document.getElementById('x1') as HTMLInputElement).value);
@@ -354,6 +432,8 @@ async function runAlgorithm() {
         count = await bresenhamLine(x1, y1, x2, y2);
     } else if (algo === 'wu') {
         count = await wuAlgorithm(x1, y1, x2, y2);
+    } else if (algo === 'castlePitteway') {
+        count = await castlePittewayAlgorithm(x1, y1, x2, y2);
     }
     const t1 = performance.now();
     logDiv.innerHTML = `Время выполнения: ${(t1 - t0).toFixed(3)} мс<br>Закрашено пикселей: ${count}`;
@@ -368,7 +448,8 @@ function sleep(ms: number) {
 (document.getElementById('algoSelect') as HTMLSelectElement).addEventListener('change', function(e) {
     const x2Input = document.getElementById('x2') as HTMLInputElement;
     const y2Input = document.getElementById('y2') as HTMLInputElement;
-    if ((e.target as HTMLSelectElement).value === 'bresenhamCircle') {
+    const value = (e.target as HTMLSelectElement).value;
+    if (value === 'bresenhamCircle') {
         document.querySelector('#endCoords label')!.textContent = "Радиус (R):";
         y2Input.style.display = 'none';
         x2Input.placeholder = "R";
