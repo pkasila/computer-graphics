@@ -20,6 +20,13 @@
             <option value="wu">Сглаживание (Wu) [Бонус]</option>
         </select>
     </div>
+    <div class="input-group" id="bresenhamRoundingGroup" style="display:none;">
+        <label for="bresenhamRounding">Округление для Брезенхема:</label>
+        <select id="bresenhamRounding">
+            <option value="ceil">В большую сторону (ceil)</option>
+            <option value="floor">В меньшую сторону (floor)</option>
+        </select>
+    </div>
     <div class="input-group">
         <label>Координаты начала (X1, Y1) / Центр:</label>
         <div style="display: flex; gap: 2px;">
@@ -70,4 +77,14 @@
     </div>
 </div>
 <script type="module" src="/src/main.ts"></script>
+<script>
+document.getElementById('algoSelect').addEventListener('change', function(e) {
+    const roundingGroup = document.getElementById('bresenhamRoundingGroup');
+    if ((e.target.value === 'bresenhamLine')) {
+        roundingGroup.style.display = '';
+    } else {
+        roundingGroup.style.display = 'none';
+    }
+});
+</script>
 </body>

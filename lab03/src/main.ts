@@ -73,6 +73,14 @@ exportCanvasBtn.addEventListener('click', () => {
     document.body.removeChild(link);
 });
 let algorithmSteps: string[] = [];
+let bresenhamRounding: 'ceil' | 'floor' = 'ceil';
+
+const roundingSelect = document.getElementById('bresenhamRounding') as HTMLSelectElement | null;
+if (roundingSelect) {
+    roundingSelect.addEventListener('change', (e) => {
+        bresenhamRounding = (e.target as HTMLSelectElement).value as 'ceil' | 'floor';
+    });
+}
 const stepsModal = document.getElementById('stepsModal') as HTMLElement;
 const stepsLog = document.getElementById('stepsLog') as HTMLElement;
 const showStepsBtn = document.getElementById('showStepsBtn') as HTMLElement;
@@ -177,6 +185,12 @@ async function bresenhamLine(x1: number, y1: number, x2: number, y2: number): Pr
 async function bresenhamLineCore(x1: number, y1: number, x2: number, y2: number, skipLatency: boolean): Promise<number> {
     algorithmSteps = [];
     let pixels = 0;
+    // Локальные реализации округления и взятия целой части
+    function ceil(val: number) { return (val >= 0) ? Math.ceil(val) : Math.floor(val); }
+    function floor(val: number) { return (val >= 0) ? Math.floor(val) : Math.ceil(val); }
+    function customRound(val: number) {
+        return bresenhamRounding === 'ceil' ? ceil(val) : floor(val);
+    }
     let dx = Math.abs(x2 - x1);
     let dy = Math.abs(y2 - y1);
     let sx = (x1 < x2) ? 1 : -1;
@@ -184,11 +198,11 @@ async function bresenhamLineCore(x1: number, y1: number, x2: number, y2: number,
     let err = dx - dy;
     algorithmSteps.push(`dx = ${dx}, dy = ${dy}, sx = ${sx}, sy = ${sy}, err = ${err}`);
     while(true) {
-        plot(x1, y1);
-        algorithmSteps.push(`plot(${x1}, ${y1}), err=${err}`);
+        plot(customRound(x1), customRound(y1));
+        algorithmSteps.push(`plot(${customRound(x1)}, ${customRound(y1)}), err=${err}`);
         pixels++;
         if (!skipLatency && latency > 0) await sleep(latency);
-        if ((x1 === x2) && (y1 === y2)) break;
+        if ((customRound(x1) === customRound(x2)) && (customRound(y1) === customRound(y2))) break;
         let e2 = 2 * err;
         algorithmSteps.push(`e2 = ${e2}`);
         if (e2 > -dy) { err -= dy; x1 += sx; algorithmSteps.push(`err -= dy → ${err}, x1 += sx → ${x1}`); }
