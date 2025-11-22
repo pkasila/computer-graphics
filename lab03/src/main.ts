@@ -1,6 +1,3 @@
-
-
-// TypeScript version of the provided reference code
 const canvas = document.getElementById('canvas') as HTMLCanvasElement;
 const ctx = canvas.getContext('2d', { alpha: false })!;
 const logDiv = document.getElementById('log') as HTMLElement;
