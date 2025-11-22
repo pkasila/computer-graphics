@@ -240,7 +240,6 @@ function runAlgorithm() {
 }
 
 (document.getElementById('algoSelect') as HTMLSelectElement).addEventListener('change', function(e) {
-    const endDiv = document.getElementById('endCoords')!;
     const x2Input = document.getElementById('x2') as HTMLInputElement;
     const y2Input = document.getElementById('y2') as HTMLInputElement;
     if ((e.target as HTMLSelectElement).value === 'bresenhamCircle') {
