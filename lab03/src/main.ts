@@ -11,6 +11,9 @@ latencyInput.addEventListener('input', (e) => {
 });
 
 let gridSize = 20;
+
+type DrawAction = { algo: string, x1: number, y1: number, x2: number, y2: number };
+const drawHistory: DrawAction[] = [];
 let centerX = canvas.width / 2;
 let centerY = canvas.height / 2;
 
@@ -59,8 +62,6 @@ function plot(x: number, y: number, opacity: number = 1, color: string = "rgba(2
     ctx.fillRect(screenX + 1, screenY - gridSize + 1, gridSize - 1, gridSize - 1);
 }
 
-// Modal logic for algorithm steps
-// Export Canvas logic
 const exportCanvasBtn = document.getElementById('exportCanvasBtn') as HTMLElement;
 exportCanvasBtn.addEventListener('click', () => {
     const dataURL = canvas.toDataURL('image/png');
@@ -90,14 +91,20 @@ window.addEventListener('keydown', (e) => {
 
 
 function clearCanvas(redraw: boolean = true) {
-    if (redraw) drawGrid();
+    if (redraw) {
+        drawGrid();
+        drawHistory.length = 0;
+    }
 }
 
-// Expose to global scope for HTML onclick
 (window as any).clearCanvas = clearCanvas;
 (window as any).runAlgorithm = runAlgorithm;
 
 async function stepAlgorithm(x1: number, y1: number, x2: number, y2: number): Promise<number> {
+    return stepAlgorithmCore(x1, y1, x2, y2, false);
+}
+
+async function stepAlgorithmCore(x1: number, y1: number, x2: number, y2: number, skipLatency: boolean): Promise<number> {
     algorithmSteps = [];
     let pixels = 0;
     const dx = x2 - x1;
@@ -121,12 +128,16 @@ async function stepAlgorithm(x1: number, y1: number, x2: number, y2: number): Pr
         x += Xinc;
         y += Yinc;
         pixels++;
-        if (latency > 0) await sleep(latency);
+        if (!skipLatency && latency > 0) await sleep(latency);
     }
     return pixels;
 }
 
 async function ddaAlgorithm(x1: number, y1: number, x2: number, y2: number): Promise<number> {
+    return ddaAlgorithmCore(x1, y1, x2, y2, false);
+}
+
+async function ddaAlgorithmCore(x1: number, y1: number, x2: number, y2: number, skipLatency: boolean): Promise<number> {
     algorithmSteps = [];
     let pixels = 0;
     let dx = x2 - x1;
@@ -145,12 +156,16 @@ async function ddaAlgorithm(x1: number, y1: number, x2: number, y2: number): Pro
         x += xInc;
         y += yInc;
         pixels++;
-        if (latency > 0) await sleep(latency);
+        if (!skipLatency && latency > 0) await sleep(latency);
     }
     return pixels;
 }
 
 async function bresenhamLine(x1: number, y1: number, x2: number, y2: number): Promise<number> {
+    return bresenhamLineCore(x1, y1, x2, y2, false);
+}
+
+async function bresenhamLineCore(x1: number, y1: number, x2: number, y2: number, skipLatency: boolean): Promise<number> {
     algorithmSteps = [];
     let pixels = 0;
     let dx = Math.abs(x2 - x1);
@@ -163,7 +178,7 @@ async function bresenhamLine(x1: number, y1: number, x2: number, y2: number): Pr
         plot(x1, y1);
         algorithmSteps.push(`plot(${x1}, ${y1}), err=${err}`);
         pixels++;
-        if (latency > 0) await sleep(latency);
+        if (!skipLatency && latency > 0) await sleep(latency);
         if ((x1 === x2) && (y1 === y2)) break;
         let e2 = 2 * err;
         algorithmSteps.push(`e2 = ${e2}`);
@@ -174,6 +189,10 @@ async function bresenhamLine(x1: number, y1: number, x2: number, y2: number): Pr
 }
 
 async function bresenhamCircle(xc: number, yc: number, r: number): Promise<number> {
+    return bresenhamCircleCore(xc, yc, r, false);
+}
+
+async function bresenhamCircleCore(xc: number, yc: number, r: number, skipLatency: boolean): Promise<number> {
     algorithmSteps = [];
     let pixels = 0;
     let x = 0;
@@ -183,7 +202,7 @@ async function bresenhamCircle(xc: number, yc: number, r: number): Promise<numbe
     drawCirclePixels(xc, yc, x, y);
     algorithmSteps.push(`x=${x}, y=${y} → plot 8 points`);
     pixels += 8;
-    if (latency > 0) await sleep(latency);
+    if (!skipLatency && latency > 0) await sleep(latency);
     while (y >= x) {
         x++;
         if (d > 0) {
@@ -197,7 +216,7 @@ async function bresenhamCircle(xc: number, yc: number, r: number): Promise<numbe
         drawCirclePixels(xc, yc, x, y);
         algorithmSteps.push(`x=${x}, y=${y} → plot 8 points`);
         pixels += 8;
-        if (latency > 0) await sleep(latency);
+        if (!skipLatency && latency > 0) await sleep(latency);
     }
     return pixels;
 }
@@ -214,13 +233,17 @@ function drawCirclePixels(xc: number, yc: number, x: number, y: number) {
 }
 
 async function wuAlgorithm(x1: number, y1: number, x2: number, y2: number): Promise<number> {
+    return wuAlgorithmCore(x1, y1, x2, y2, false);
+}
+
+async function wuAlgorithmCore(x1: number, y1: number, x2: number, y2: number, skipLatency: boolean): Promise<number> {
     algorithmSteps = [];
     let pixels = 0;
     async function plotWu(x: number, y: number, c: number) {
         plot(x, y, c, "rgba(0,0,0,");
         algorithmSteps.push(`plotWu(${x}, ${y}, opacity=${c.toFixed(3)})`);
         pixels++;
-        if (latency > 0) await sleep(latency);
+        if (!skipLatency && latency > 0) await sleep(latency);
     }
     function ipart(x: number) { return Math.floor(x); }
     function round(x: number) { return Math.round(x); }
@@ -311,7 +334,9 @@ async function runAlgorithm() {
     }
     const t1 = performance.now();
     logDiv.innerHTML = `Время выполнения: ${(t1 - t0).toFixed(3)} мс<br>Закрашено пикселей: ${count}`;
+    drawHistory.push({ algo, x1, y1, x2, y2 });
 }
+
 // Helper for latency
 function sleep(ms: number) {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -335,6 +360,22 @@ function sleep(ms: number) {
     gridSize = parseInt((e.target as HTMLInputElement).value);
     document.getElementById('zoomVal')!.textContent = String(gridSize);
     drawGrid();
+    // Перерисовать все объекты из истории без задержки
+    (async () => {
+        for (const action of drawHistory) {
+            if (action.algo === 'bresenhamCircle') {
+                await bresenhamCircleCore(action.x1, action.y1, action.x2, true);
+            } else if (action.algo === 'step') {
+                await stepAlgorithmCore(action.x1, action.y1, action.x2, action.y2, true);
+            } else if (action.algo === 'dda') {
+                await ddaAlgorithmCore(action.x1, action.y1, action.x2, action.y2, true);
+            } else if (action.algo === 'bresenhamLine') {
+                await bresenhamLineCore(action.x1, action.y1, action.x2, action.y2, true);
+            } else if (action.algo === 'wu') {
+                await wuAlgorithmCore(action.x1, action.y1, action.x2, action.y2, true);
+            }
+        }
+    })();
 });
 
 canvas.addEventListener('mousemove', function(evt) {
